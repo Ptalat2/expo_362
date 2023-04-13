@@ -1,0 +1,216 @@
+Subsystem 2:
+#include <IRremote.h>
+
+// C++ code
+//
+/*
+  LiquidCrystal Library - Hello World
+
+   Demonstrates the use of a 16x2 LCD display.
+  The LiquidCrystal library works with all LCD
+  displays that are compatible with the  Hitachi
+  HD44780 driver. There are many of them out
+  there, and you  can usually tell them by the
+  16-pin interface.
+
+  This sketch prints "Hello World!" to the LCD
+  and shows the time.
+
+  The circuit:
+  * LCD RS pin to digital pin 12
+  * LCD Enable pin to digital pin 11
+  * LCD D4 pin to digital pin 5
+  * LCD D5 pin to digital pin 4
+  * LCD D6 pin to digital pin 3
+  * LCD D7 pin to digital pin 2
+  * LCD R/W pin to ground
+  * LCD VSS pin to ground
+  * LCD VCC pin to 5V
+  * 10K resistor:
+  * ends to +5V and ground
+  * wiper to LCD VO pin (pin 3)
+
+  Library originally added 18 Apr 2008  by David
+  A. Mellis
+  library modified 5 Jul 2009  by Limor Fried
+  (http://www.ladyada.net)
+  example added 9 Jul 2009  by Tom Igoe
+  modified 22 Nov 2010  by Tom Igoe
+
+  This example code is in the public domain.
+
+  http://www.arduino.cc/en/Tutorial/LiquidCrystal
+*/
+
+#include <IRremote.h>
+#include <LiquidCrystal.h>
+int seconds = 0;
+int yes =0;
+
+int RECV_PIN = 8; // IR receiver pin
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+LiquidCrystal lcd_1(12, 11, 5, 4, 3, 2);
+
+void setup()
+{
+  Serial.begin(9600);
+  irrecv.enableIRIn(); // Start the receiver
+  lcd_1.begin(16, 2); // Set up the number of columns and rows on the LCD.
+
+  // Print a message to the LCD.
+ // lcd_1.print("hello world!");
+}
+
+void loop()
+{
+  if(yes ==0) {
+    if (irrecv.decode(&results)) { // If a code is received
+      Serial.println(results.value);
+      if (results.value == 4294967295 ) { // Replace with the code of the button you want to use
+       yes =1; // Replace with the function you want to execute
+      }
+      //irrecv.resume(); // Receive the next value
+    }
+  }
+  
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting
+  // begins with 0):
+  if(yes ==1) {
+    delay(300);
+     lcd_1.begin(16, 2);
+     lcd_1.print("hello world!");
+    lcd_1.setCursor(0, 1);
+    // print the number of seconds since reset:
+    lcd_1.print(seconds);
+    delay(1000); // Wait for 1000 millisecond(s)
+    seconds += 1;
+  }
+}
+
+#include <Adafruit_LEDBackpack.h>
+#include <RTClib.h>
+
+
+#include <Wire.h>
+
+
+
+
+#include <IRremote.h>
+
+// C++ code
+//
+/*
+  LiquidCrystal Library - Hello World
+
+   Demonstrates the use of a 16x2 LCD display.
+  The LiquidCrystal library works with all LCD
+  displays that are compatible with the  Hitachi
+  HD44780 driver. There are many of them out
+  there, and you  can usually tell them by the
+  16-pin interface.
+
+  This sketch prints "Hello World!" to the LCD
+  and shows the time.
+
+  The circuit:
+  * LCD RS pin to digital pin 12
+  * LCD Enable pin to digital pin 11
+  * LCD D4 pin to digital pin 5
+  * LCD D5 pin to digital pin 4
+  * LCD D6 pin to digital pin 3
+  * LCD D7 pin to digital pin 2
+  * LCD R/W pin to ground
+  * LCD VSS pin to ground
+  * LCD VCC pin to 5V
+  * 10K resistor:
+  * ends to +5V and ground
+  * wiper to LCD VO pin (pin 3)
+
+  Library originally added 18 Apr 2008  by David
+  A. Mellis
+  library modified 5 Jul 2009  by Limor Fried
+  (http://www.ladyada.net)
+  example added 9 Jul 2009  by Tom Igoe
+  modified 22 Nov 2010  by Tom Igoe
+
+  This example code is in the public domain.
+
+  http://www.arduino.cc/en/Tutorial/LiquidCrystal
+*/
+
+
+
+//int seconds = 0;
+int yes =0;
+//unsigned long currentMillis;
+//unsigned long elapsedMillis;
+//int seconds;
+int RECV_PIN = 8; // IR receiver pin
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+const byte I2C_ADDR = 0x3C; // I2C address of the LCD
+Adafruit_7segment matrix = Adafruit_7segment();
+RTC_DS1307 rtc;
+
+unsigned long startMillis; // Declare startMillis as a global variable
+
+bool time_up = false;
+
+void setup()
+{
+    matrix.begin(0x70);  // set the address of the LED backpack module
+
+  Serial.begin(9600);
+  irrecv.enableIRIn(); // Start the receiver
+  // Print a message to the LCD.
+ // lcd_1.print("hello world!");
+  Wire.begin();
+  rtc.begin();
+    startMillis = millis(); // initialize the start time
+
+}
+
+void loop()
+{
+ 
+  
+  if(yes ==0) {
+   // startMillis =  millis();
+    if (irrecv.decode(&results)) { // If a code is received
+      Serial.println(results.value);
+      if (results.value == 4294967295 ) { // Replace with the code of the button you want to use
+       yes =1; // Replace with the function you want to execute
+      }
+      irrecv.resume(); // Receive the next value
+    }
+  }
+  
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting
+  // begins with 0):
+  if(yes ==1) {
+      unsigned long elapsedMillis = millis() - startMillis;
+  int seconds = (elapsedMillis / 1000 ); // Convert elapsed time to seconds
+    
+    matrix.writeDigitNum(2, seconds / 10);
+  matrix.writeDigitNum(3, seconds % 10);
+  matrix.writeDisplay();
+  
+   
+ 
+  
+  // Update the display
+ // matrix.writeDisplay();
+
+  //matrix.drawColon(true); // display the colon between minutes and seconds
+  //matrix.writeDisplay();
+
+   
+    delay(100);
+    
+  }
+}
